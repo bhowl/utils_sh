@@ -12,9 +12,17 @@ err_info() {
 # Prints error info, then returns exit status of 1.
 # @param      additional error message
 # @returns    exit status
-error() {
+err_return() {
 	echo "$(err_info $*)" >&2
 	return 1
+}
+
+# Prints error info, then returns exit status of 1.
+# @param      additional error message
+# @returns    exit status
+err_exit() {
+	echo "$(err_info $*)" >&2
+	exit 1
 }
 
 # Sources specified file or exits.
@@ -24,7 +32,7 @@ source_or_exit() {
 	if [[ -f "$file" ]]; then
 		. "$file"
 	else
-		err_info "Could not source $file" && exit 1
+		err_exit "Could not source $file"
 	fi
 }
 
@@ -33,7 +41,14 @@ source_or_exit() {
 # TODO: add more functions for checking number of args, options vs tokens vs option w/ token
 specify_arg() {
 	if (( $# < 1 )); then
-		err_info "Please supply one arg when calling script" && exit 1
+		err_exit "Please supply one arg when calling script"
+	fi
+}
+
+# TODO: update 
+positional_param1() {
+	if [ "$1" != -* ]; then
+		err_exit"First arg is a positional parameter"
 	fi
 }
 
@@ -43,7 +58,7 @@ specify_arg() {
 check_path_exists() {
 	local path="$1"
 	if ! [[ -d "$path" ]]; then
-		error "Path doesn't exist: $path"
+		err_return "Path doesn't exist: $path"
 	fi
 }
 
@@ -53,7 +68,7 @@ check_path_exists() {
 check_file_exists() {
 	local file="$1"
 	if ! [[ -e "$file" ]]; then
-		error "File doesn't exist: $file"
+		err_return "File doesn't exist: $file"
 	fi
 }
 
