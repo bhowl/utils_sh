@@ -45,6 +45,17 @@ specify_arg() {
 	fi
 }
 
+check_args() {
+	local n="$1" # number of required params?
+	local params="$2" # all param (checking for --help or -h)
+
+	echo $params | grep "help"
+	
+	if (( $# < $(( $n + 1 )) )); then
+		err_exit "A minimum of $n arg(s) are required"
+	fi
+}
+
 # TODO: update 
 positional_param1() {
 	if [ "$1" != -* ]; then
@@ -90,10 +101,10 @@ continue_prompt() {
 
 # Prints array element per line.
 # @param    a bash array
-# TODO: add parameter to specifying the command when iterating through array 
 print_array() {
-	local array=("${@}")
+	local cmd="$1"
+	local array=("${@:2}")
 	for element in "${array[@]}"; do
-		echo "$element"
+		eval $cmd "$element"
 	done
 }
