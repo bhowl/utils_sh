@@ -58,7 +58,7 @@ check_args() {
 
 # TODO: update 
 positional_param1() {
-	if [ "$1" != -* ]; then
+	if [[ "$1" != -* ]]; then
 		err_exit"First arg is a positional parameter"
 	fi
 }
