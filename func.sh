@@ -25,6 +25,18 @@ err_exit() {
 	exit 1
 }
 
+# Sources specifed file or returns
+# @param    file to source
+source_or_return()
+{
+	local file="$1"
+	if [[ -f "$file" ]]; then
+		. "$file"
+	else
+		err_return "Could not source $file"
+	fi
+}
+
 # Sources specified file or exits.
 # @param    file to source
 source_or_exit() {
@@ -41,7 +53,7 @@ source_or_exit() {
 # TODO: add more functions for checking number of args, options vs tokens vs option w/ token
 specify_arg() {
 	if (( $# < 1 )); then
-		err_exit "Please supply one arg when calling script"
+		err_return "Please specify arg"
 	fi
 }
 
