@@ -1,12 +1,12 @@
 #!/bin/bash
 # A library of utility functions for bash scripting.
 
-# Attempts to print error details.
-# @param    additional error message
 err_info() {
-	local i=$((${#BASH_SOURCE[@]} - 1))
-	echo "${BASH_SOURCE[$i]}: line ${BASH_LINENO[1]}: ${FUNCNAME[1]}:" \
-		 "${FUNCNAME[2]}: $*"
+	echo -n "${BASH_SOURCE[ $((${#BASH_SOURCE[@]} - 1)) ]}: "
+	for (( i=0; i < $(( ${#FUNCNAME[@]} - 1 )); i++ )); do
+		echo -n "${FUNCNAME[$i]}(${BASH_LINENO[$i]}): "
+	done
+	echo "$*"
 }
 
 # Prints error info, then returns exit status of 1.
@@ -23,6 +23,14 @@ err_return() {
 err_exit() {
 	echo "$(err_info $*)" >&2
 	exit 1
+}
+
+# Checks the exit status is 0 for previous command, else err_exit
+# @returns exit status
+check_for_zero_exit_status() {
+	if (( "$?" != 0 )); then
+		return "$?"
+	fi
 }
 
 # Sources specified file or exits.
@@ -45,21 +53,35 @@ specify_arg() {
 	fi
 }
 
+# First checks number of required parameters. Then checks if "--help" or "-h" are provided as
+# options to the script.
+# @returns    err_exit if number of params are less than provided.
+# @returns    export $help_opt boolean
 check_args() {
-	local n="$1" # number of required params?
-	local params="$2" # all param (checking for --help or -h)
+	local n="$1" # number of required params
 
-	echo $params | grep "help"
-	
 	if (( $# < $(( $n + 1 )) )); then
-		err_exit "A minimum of $n arg(s) are required"
+		err_exit "A minimum of $n arg(s) are required ($#)"
+	fi
+	
+	local params="${@:2}" # all param (checking for --help or -h)
+	export help_opt=false
+	
+	echo $params | grep --word-regexp --silent -- "--help"
+	if (( $? == 0 )); then
+		export help_opt=true
+	fi
+
+	echo $params | grep --word-regexp --silent -- "-h"
+	if (( $? == 0 )); then
+		export help_opt=true
 	fi
 }
 
 # TODO: update 
 positional_param1() {
 	if [[ "$1" != -* ]]; then
-		err_exit"First arg is a positional parameter"
+		err_exit "First arg is a positional parameter"
 	fi
 }
 
@@ -107,4 +129,9 @@ print_array() {
 	for element in "${array[@]}"; do
 		eval $cmd "$element"
 	done
+}
+
+arr_size() {
+	local arr=( "${@}" )
+	echo ${#arr[@]};
 }
