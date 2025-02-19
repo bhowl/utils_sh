@@ -12,14 +12,6 @@ err_info() {
 # Prints error info, then returns exit status of 1.
 # @param      additional error message
 # @returns    exit status
-err_return() {
-	echo "$(err_info $*)" >&2
-	return 1
-}
-
-# Prints error info, then returns exit status of 1.
-# @param      additional error message
-# @returns    exit status
 err_exit() {
 	echo "$(err_info $*)" >&2
 	exit 1
@@ -134,4 +126,24 @@ print_array() {
 arr_size() {
 	local arr=( "${@}" )
 	echo ${#arr[@]};
+}
+
+mv_check() {
+	# Only supports SOURCE to DEST (no -t option)
+	local source="$1"
+	local dest="$2"
+	
+	if (( $# != 2 )); then
+		err_exit "specify 2 arguments"
+	fi
+
+	if ! readlink -e "$source" > /dev/null; then
+		err_info "$source doesn't exist" && return 1
+	fi
+
+	if [[ -d "$dest" ]]; then
+		echo "Moves $source in $dest directory"
+	else
+		echo  "Renames $source to $dest"
+	fi
 }
