@@ -17,11 +17,24 @@ err_exit() {
 	exit 1
 }
 
+
 # Checks the exit status is 0 for previous command, else err_exit
 # @returns exit status
 check_for_zero_exit_status() {
 	if (( "$?" != 0 )); then
 		return "$?"
+	fi
+}
+
+# Sources specifed file or returns
+# @param    file to source
+source_or_return()
+{
+	local file="$1"
+	if [[ -f "$file" ]]; then
+		. "$file"
+	else
+		err_info "Could not source $file" && return 1
 	fi
 }
 
@@ -41,7 +54,7 @@ source_or_exit() {
 # TODO: add more functions for checking number of args, options vs tokens vs option w/ token
 specify_arg() {
 	if (( $# < 1 )); then
-		err_exit "Please supply one arg when calling script"
+		err_info "Please specify arg" && return 1
 	fi
 }
 
@@ -83,7 +96,7 @@ positional_param1() {
 check_path_exists() {
 	local path="$1"
 	if ! [[ -d "$path" ]]; then
-		err_return "Path doesn't exist: $path"
+		err_info "Path doesn't exist: $path" && return 1
 	fi
 }
 
@@ -93,7 +106,7 @@ check_path_exists() {
 check_file_exists() {
 	local file="$1"
 	if ! [[ -e "$file" ]]; then
-		err_return "File doesn't exist: $file"
+		err_info "File doesn't exist: $file" && return 1
 	fi
 }
 
