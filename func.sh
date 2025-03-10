@@ -128,12 +128,28 @@ continue_prompt() {
 
 # Prints array element per line.
 # @param    a bash array
-print_array() {
+arr_cmd() {
 	local cmd="$1"
-	local array=("${@:2}")
-	for element in "${array[@]}"; do
-		eval $cmd "$element"
+	local arr=("${@:2}")
+	for el in "${arr[@]}"; do
+		eval $cmd "$el"
 	done
+}
+
+arr_uniq() {
+	local pattern="$1"
+	local arr=("${@:2}")
+	if (( ${#arr[@]} > 0 )); then
+		for el in "${arr[@]}"; do
+			if [[ "$el" == "$pattern" ]]; then
+				echo true && return 0
+			fi
+		done
+	else
+		err_info "Array size is ${#arr[@]}" && return 1
+	fi
+
+	echo false && return 0
 }
 
 arr_size() {
@@ -141,6 +157,7 @@ arr_size() {
 	echo ${#arr[@]};
 }
 
+# TODO: update
 mv_check() {
 	# Only supports SOURCE to DEST (no -t option)
 	local source="$1"
