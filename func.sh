@@ -96,7 +96,7 @@ positional_param1() {
 check_path_exists() {
 	local path="$1"
 	if ! [[ -d "$path" ]]; then
-		err_info "Path doesn't exist: $path" && return 1
+		return 1
 	fi
 }
 
@@ -106,7 +106,7 @@ check_path_exists() {
 check_file_exists() {
 	local file="$1"
 	if ! [[ -e "$file" ]]; then
-		err_info "File doesn't exist: $file" && return 1
+		return 1
 	fi
 }
 
@@ -146,7 +146,7 @@ arr_uniq() {
 			fi
 		done
 	else
-		err_info "Array size is ${#arr[@]}" && return 1
+		return 1
 	fi
 
 	echo false && return 0
