@@ -177,3 +177,27 @@ mv_check() {
 		echo  "Renames $source to $dest"
 	fi
 }
+
+# For given subj, copies given array of files from source directory to given
+# destination.
+# @param    source (directory)
+# @param    dest (directory)
+# @param    array of files to be copied
+copy_files_array_to_dest() {
+	local exit_status=0;
+	local source="$1"
+	local dest="$2";
+	local array=("${@:3}")
+	
+	for file in "${array[@]}"; do
+		if ! [[ -f "$dest/$file" ]]; then
+			cp -nv $source/$file $dest
+			wait
+		else
+			exit_status=$(( $exit_status + 1 ))
+			error "$file already exists in $dest"
+		fi
+	done
+	
+	return $exit_status
+}
