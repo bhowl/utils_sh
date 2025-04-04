@@ -2,7 +2,7 @@
 # A library of utility functions for bash scripting.
 
 err_info() {
-	echo -n "${BASH_SOURCE[ $((${#BASH_SOURCE[@]} - 1)) ]}: "
+	echo -n "${BASH_SOURCE[$((${#BASH_SOURCE[@]} - 1))]##*/}: "
 	for (( i=0; i < $(( ${#FUNCNAME[@]} - 1 )); i++ )); do
 		echo -n "${FUNCNAME[$i]}(${BASH_LINENO[$i]}): "
 	done
@@ -34,7 +34,7 @@ source_or_return()
 	if [[ -f "$file" ]]; then
 		. "$file"
 	else
-		err_info "Could not source $file" && return 1
+		err_info "Could not source ${file##*/}" && return 1
 	fi
 }
 
@@ -43,9 +43,9 @@ source_or_return()
 source_or_exit() {
 	local file="$1"
 	if [[ -f "$file" ]]; then
-		. "$file"
+		. "$file" "${@:2}"
 	else
-		err_exit "Could not source $file"
+		err_exit "Could not source ${file##*/}"
 	fi
 }
 
@@ -61,26 +61,22 @@ specify_arg() {
 # First checks number of required parameters. Then checks if "--help" or "-h" are provided as
 # options to the script.
 # @returns    err_exit if number of params are less than provided.
-# @returns    export $help_opt boolean
+# @returns    export $helpOpt boolean
 check_args() {
 	local n="$1" # number of required params
-
+	
 	if (( $# < $(( $n + 1 )) )); then
 		err_exit "A minimum of $n arg(s) are required ($#)"
 	fi
 	
-	local params="${@:2}" # all param (checking for --help or -h)
-	export help_opt=false
-	
-	echo $params | grep --word-regexp --silent -- "--help"
-	if (( $? == 0 )); then
-		export help_opt=true
-	fi
+	local reqParams=("${@:2:$n}")
 
-	echo $params | grep --word-regexp --silent -- "-h"
-	if (( $? == 0 )); then
-		export help_opt=true
-	fi
+	local i=0
+	for (( i=0; i<${#reqParams[@]}; i++)); do
+		if [[ -z "${reqParams[$i]}" ]]; then
+			err_exit "specify arg: $(( i + 1 ))"
+		fi
+	done
 }
 
 # TODO: update 
@@ -95,7 +91,7 @@ positional_param1() {
 # @returns    exit status
 check_path_exists() {
 	local path="$1"
-	if ! [[ -d "$path" ]]; then
+	if ! [[ -d "$path" ]] || [[ -z "$path" ]]; then
 		return 1
 	fi
 }
@@ -105,7 +101,7 @@ check_path_exists() {
 # @returns    exit status
 check_file_exists() {
 	local file="$1"
-	if ! [[ -e "$file" ]]; then
+	if ! [[ -e "$file" ]] || [[ -z "$file" ]]; then
 		return 1
 	fi
 }
@@ -195,7 +191,7 @@ copy_files_array_to_dest() {
 			wait
 		else
 			exit_status=$(( $exit_status + 1 ))
-			error "$file already exists in $dest"
+			echo "$file already exists in $dest. Leaving in place..."
 		fi
 	done
 	
