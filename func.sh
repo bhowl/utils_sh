@@ -126,7 +126,7 @@ continue_prompt() {
 # @param    a bash array
 arr_cmd() {
 	local cmd="$1"
-	local arr=("${@:2}")
+	local arr=( "${@:2}" )
 	for el in "${arr[@]}"; do
 		eval $cmd "$el"
 	done
@@ -196,4 +196,26 @@ copy_files_array_to_dest() {
 	done
 	
 	return $exit_status
+}
+
+clean_directory() {
+    local dirPath="$1"
+
+	check_args 1 "$dirPath"
+	
+    # Validate input
+    if [[ -z "$dirPath" || "$dirPath" == "/" || \
+			  "$dirPath" == "/home" || "$dirPath" == "/etc" ]]; then
+        err_exit "Invalid or dangerous path: $dirPath"
+    fi
+
+    # Check if path exists
+    check_path_exists "$dirPath" || err_exit "Path doesn't exist: $dirPath"
+
+    # Check if there are files or subdirectories to delete
+    if compgen -G "$dirPath/*" > /dev/null; then
+        echo "Cleaning directory: $dirPath"
+        rm -rf "$dirPath/"* || err_exit "Failed cleaning $dirPath/*: $dirPath/*"
+        echo "Deleted contents of $dirPath"
+    fi
 }
