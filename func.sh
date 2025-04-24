@@ -148,9 +148,37 @@ arr_uniq() {
 	echo false && return 0
 }
 
-arr_size() {
-	local arr=( "${@}" )
-	echo ${#arr[@]};
+# Function to find the most frequent string in an array
+arr_most_freq_str() {
+    local arr=("$@")
+    declare -A count
+    local maxCount=0
+    export maxString=""
+    local -a maxStrings
+    export isTied=false
+
+    # Count occurrences and track strings with maximum count
+    for str in "${arr[@]}"; do
+        ((count["$str"]++))
+        if [ ${count["$str"]} -gt $maxCount ]; then
+            maxCount=${count["$str"]}
+            maxString="$str"
+            maxStrings=("$str")
+        elif [ ${count["$str"]} -eq $maxCount ]; then
+            maxStrings+=("$str")
+        fi
+    done
+
+    # Handle empty array
+    if [ $maxCount -eq 0 ]; then
+        return 1
+    fi
+
+    # Set isTied: true if multiple strings have max count or all counts are 1
+    if [ ${#maxStrings[@]} -gt 1 ] || [ $maxCount -eq 1 ]; then		
+        export isTied=true
+    fi
+    return 0
 }
 
 # TODO: update
