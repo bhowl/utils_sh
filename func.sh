@@ -247,3 +247,21 @@ clean_directory() {
         echo "Deleted contents of $dirPath"
     fi
 }
+
+# Helper function for selecting from an array.
+make_selection() {
+	local array=();
+	array=( "$@" );
+
+    select selection in "${array[@]}" "DONE"; do
+        if (( 1 <= "$REPLY" )) && \
+			   (( "$REPLY" <= ${#array[@]} )); then
+            break
+		elif (( "$REPLY" == ${#array[@]} + 1 )); then
+			break
+        else
+            echo "Select any number from 1-$(( ${#array[@]} + 1 ))"
+        fi
+    done
+	export REPLY selection
+}
